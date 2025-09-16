@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "build:pages": "next build && next export",
+    "deploy:pages": "rm -rf docs && mkdir -p docs && cp -r out/* docs/ && touch docs/.nojekyll"
   },
   "dependencies": {
     "@radix-ui/react-slider": "^1.3.6",

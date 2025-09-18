@@ -43,20 +43,28 @@ export type EventItem = {
   confidence: number // 0..1
 }
 
-const clamp = (x: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, x))
-
 function computeCategoryScores(events: EventItem[], now = new Date()): Record<Category, number> {
   const halfLifeDays = 365
   const lambda = Math.log(2) / halfLifeDays
-  const base: Record<Category, number> = Object.fromEntries(CATEGORIES.map(c => [c, 0])) as any
+
+  // Properly typed zeroed map
+  const base = CATEGORIES.reduce((acc, c) => {
+    acc[c] = 0
+    return acc
+  }, {} as Record<Category, number>)
+
   for (const e of events) {
-    const ageDays = Math.max(0, (now.getTime() - new Date(e.date).getTime()) / (1000*60*60*24))
+    const ageDays = Math.max(0, (now.getTime() - new Date(e.date).getTime()) / (1000 * 60 * 60 * 24))
     const decay = Math.exp(-lambda * ageDays)
     const signedImpact = e.direction * e.magnitude * e.confidence * decay
     base[e.category] += signedImpact
   }
-  const norm: Record<Category, number> = { ...base } as any
-  for (const k of CATEGORIES) norm[k] = Math.tanh(base[k] / 10) * 100
+
+  // No `any` here
+  const norm: Record<Category, number> = { ...base }
+  for (const k of CATEGORIES) {
+    norm[k] = Math.tanh(base[k] / 10) * 100
+  }
   return norm
 }
 
@@ -167,7 +175,7 @@ function ShareCard({ index, history, categoryScores, events }: { index: number; 
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={history.map(h => ({ t: new Date(h.ts).toLocaleTimeString(), v: h.value }))}>
               <XAxis dataKey="t" hide /><YAxis domain={[-100, 100]} hide />
-              <Tooltip formatter={(v: any) => (typeof v === 'number' ? v.toFixed(1) : v)} />
+              <Tooltip formatter={(v: unknown) => (typeof v === 'number' ? v.toFixed(1) : String(v))} />
               <Line type="monotone" dataKey="v" dot={false} />
             </LineChart>
           </ResponsiveContainer>

@@ -20,3 +20,40 @@ This is still pretty quick, just a few copy-paste commands.
    ```
 5. Visit **[http://localhost:3000](http://localhost:3000)** in your browser.
 6. Use **Export Card** to download the image for posting.
+
+
+Perfect, thank you for showing me the screenshot — it clears things up.
+
+Right now GitHub Pages is **disabled** for your `democracy-action-tracker` repo. That’s why you get the 404. Here’s exactly what to do:
+
+---
+
+### ✅ Steps to enable Pages
+
+1. In your repo, go to **Settings → Pages**.
+2. Under **Build and deployment → Source**:
+
+   * Choose **Deploy from a branch**.
+3. Under **Branch**:
+
+   * Select **main**.
+   * In the **Folder** dropdown, select **/docs**.
+4. Click **Save**.
+
+---
+
+### What happens next
+
+* After saving, you’ll see a green box appear that says something like:
+
+  > *Your site is live at [https://dvoils.github.io/democracy-action-tracker/](https://dvoils.github.io/democracy-action-tracker/)*
+* The first time, it can take **2–5 minutes** before the URL works.
+* Refresh with **Ctrl+Shift+R** (or use incognito) to bypass cached 404s.
+
+---
+
+Once you enable this, your tracker will be available at:
+👉 **[https://dvoils.github.io/democracy-action-tracker/](https://dvoils.github.io/democracy-action-tracker/)**
+
+Do you want me to also update the HTML of your main site (`dvoils.github.io`) so the **"Democracy Action Tracker" button** is already pointing to that URL?
+

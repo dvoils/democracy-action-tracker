@@ -40,6 +40,48 @@
 
 # Test the PR locally
 
+Run this sequence in your repo root:
+
+```bash
+# Make sure you have the latest branches from GitHub
+git fetch origin
+
+# Create a new test branch based on main
+git checkout -b modular-refactor origin/main
+
+# Merge in the PR branch
+git merge origin/codex/improve-code-for-better-maintainability
+
+# Install dependencies (in case PR added new ones)
+npm install
+
+# Run locally in dev mode
+npm run dev
+
+# Build + deploy to docs/ (simulate GitHub Pages)
+npm run build:pages && npm run deploy:pages
+```
+
+## What this does
+
+* `git fetch origin` → pulls down the latest PR branch from GitHub.
+* `git checkout -b modular-refactor origin/main` → creates a fresh branch from your main branch.
+* `git merge origin/codex/improve-code-for-better-maintainability` → merges in the PR changes so you can test them.
+* Then you just install, run, and build as usual.
+
+
+👉 If everything looks good in your local test, you can merge the PR into `main` directly on GitHub, and then re-run:
+
+```bash
+git pull origin main
+npm run build:pages && npm run deploy:pages
+git add docs
+git commit -m "Publish updated tracker"
+git push
+```
+
+asdf 
+
 ```bash
 npm install
 npm run dev      # open http://localhost:3000 and click around

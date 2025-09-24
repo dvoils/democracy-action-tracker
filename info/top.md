@@ -1,7 +1,5 @@
 # Set up initial app
 
-This is still pretty quick, just a few copy-paste commands.
-
 1. Install **Node.js LTS** (from nodejs.org) if you don’t have it.
 2. Open Terminal (Mac) or Command Prompt/PowerShell (Windows) and run:
 
@@ -21,16 +19,9 @@ This is still pretty quick, just a few copy-paste commands.
 5. Visit **[http://localhost:3000](http://localhost:3000)** in your browser.
 6. Use **Export Card** to download the image for posting.
 
-
-Perfect, thank you for showing me the screenshot — it clears things up.
-
-Right now GitHub Pages is **disabled** for your `democracy-action-tracker` repo. That’s why you get the 404. Here’s exactly what to do:
-
----
-
-### ✅ Steps to enable Pages
-
-1. In your repo, go to **Settings → Pages**.
+# Steps to enable Pages
++ Needed because this repo is being served as a link from my personal github.io page
+1. In the repo, go to **Settings → Pages**.
 2. Under **Build and deployment → Source**:
 
    * Choose **Deploy from a branch**.
@@ -40,9 +31,6 @@ Right now GitHub Pages is **disabled** for your `democracy-action-tracker` repo.
    * In the **Folder** dropdown, select **/docs**.
 4. Click **Save**.
 
----
-
-### What happens next
 
 * After saving, you’ll see a green box appear that says something like:
 
@@ -50,10 +38,48 @@ Right now GitHub Pages is **disabled** for your `democracy-action-tracker` repo.
 * The first time, it can take **2–5 minutes** before the URL works.
 * Refresh with **Ctrl+Shift+R** (or use incognito) to bypass cached 404s.
 
----
+# Test the PR locally
 
-Once you enable this, your tracker will be available at:
-👉 **[https://dvoils.github.io/democracy-action-tracker/](https://dvoils.github.io/democracy-action-tracker/)**
+```bash
+npm install
+npm run dev      # open http://localhost:3000 and click around
+npm run build:pages && npm run deploy:pages
+```
 
-Do you want me to also update the HTML of your main site (`dvoils.github.io`) so the **"Democracy Action Tracker" button** is already pointing to that URL?
+(That copies the static export into `docs/` so you can sanity-check the export locally in the repo.)
+
+## If it looks good, merge the PR to `main`
+
+**Easiest: GitHub UI**
+
+* Open the PR on GitHub and click **Merge pull request**.
+
+**Or locally**
+
+```bash
+git checkout main
+git fetch origin
+git merge --no-ff origin/codex/improve-code-for-better-maintainability -m "Merge PR #1"
+git push origin main
+```
+
+## Publish the updated site to GitHub Pages
+
+Because Pages serves from `main`’s `docs/`, rebuild after the merge:
+
+```bash
+# ensure you’re on main and up to date
+git checkout main
+git pull
+
+# rebuild static export and publish to docs/
+npm run build:pages
+npm run deploy:pages
+
+git add docs
+git commit -m "Publish updated tracker to GitHub Pages"
+git push
+```
+
+Your live URL stays: **[https://dvoils.github.io/democracy-action-tracker/](https://dvoils.github.io/democracy-action-tracker/)**
 

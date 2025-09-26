@@ -80,7 +80,18 @@ export default function DemocracyTracker() {
 
   // Keep a small sparkline history (client-only)
   useEffect(() => {
-    setHistory((prev) => [...prev.slice(-199), { ts: Date.now(), value: index }])
+    const now = Date.now()
+    setHistory(prev => {
+      const base =
+        prev.length === 0
+          ? Array.from({ length: 60 }, (_, i) => ({
+              ts: now - (59 - i) * 2000,
+              value: index,
+            }))
+          : prev
+
+      return [...base.slice(-199), { ts: now, value: index }]
+    })
   }, [index])
 
   useEffect(() => {

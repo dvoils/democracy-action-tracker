@@ -14,30 +14,84 @@ import {
   ScoreHistoryPoint,
   computeCategoryScores,
   createDefaultWeights,
-  seedEvents,
   weightedIndex,
 } from '@/lib/democracy'
 
+/** Client-only live clock text (prevents SSR/client mismatch) */
+function useNowText() {
+  const [text, setText] = React.useState('')
+  const [iso, setIso] = React.useState('')
+  useEffect(() => {
+    const tick = () => {
+      const d = new Date()
+      setIso(d.toISOString())
+      setText(d.toLocaleString())
+    }
+    tick()
+    const id = setInterval(tick, 1000)
+    return () => clearInterval(id)
+  }, [])
+  return { text, iso }
+}
+
 export default function DemocracyTracker() {
-  const [events, setEvents] = useState<EventItem[]>(seedEvents)
+  // Start empty; seed on the client to avoid SSR timing drift
+  const [events, setEvents] = useState<EventItem[]>([])
   const [weights, setWeights] = useState<CategoryWeights>(() => createDefaultWeights())
   const [history, setHistory] = useState<ScoreHistoryPoint[]>([])
+
+  // Seed demo events on the client after mount (safe to use Date here)
+  useEffect(() => {
+    const seeds: EventItem[] = [
+      {
+        id: 'seed-1',
+        date: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(),
+        title: 'Court curtails gerrymandered map',
+        category: 'Elections',
+        direction: 1,
+        magnitude: 2.5,
+        confidence: 0.9,
+        url: '#',
+      },
+      {
+        id: 'seed-2',
+        date: new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString(),
+        title: 'Legislature advances voter ID expansion',
+        category: 'Elections',
+        direction: -1,
+        magnitude: 2.0,
+        confidence: 0.8,
+      },
+      {
+        id: 'seed-3',
+        date: new Date().toISOString(),
+        title: 'Peaceful mass protest for press freedom',
+        category: 'Civil Society',
+        direction: 1,
+        magnitude: 1.2,
+        confidence: 0.7,
+      },
+    ]
+    setEvents(seeds)
+  }, [])
 
   const categoryScores = useMemo<CategoryScores>(() => computeCategoryScores(events), [events])
   const index = useMemo(() => weightedIndex(categoryScores, weights), [categoryScores, weights])
 
+  // Keep a small sparkline history (client-only)
   useEffect(() => {
-    setHistory(previous => [...previous.slice(-199), { ts: Date.now(), value: index }])
+    setHistory((prev) => [...prev.slice(-199), { ts: Date.now(), value: index }])
   }, [index])
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setHistory(previous => [...previous.slice(-199), { ts: Date.now(), value: index }])
+      setHistory((prev) => [...prev.slice(-199), { ts: Date.now(), value: index }])
     }, 2000)
     return () => clearInterval(timer)
   }, [index])
 
   const cardRef = useRef<HTMLDivElement | null>(null)
+  const { text: nowText, iso: nowISO } = useNowText()
 
   async function handleExport() {
     if (!cardRef.current) return
@@ -53,7 +107,12 @@ export default function DemocracyTracker() {
       <div className="sticky top-0 z-10 border-b bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
           <div className="text-lg font-semibold">U.S. Democracy Tracker</div>
-          <div className="flex items-center gap-2 text-xs opacity-70">{new Date().toLocaleString()}</div>
+          {/* Hydration-safe time display */}
+          <div className="flex items-center gap-2 text-xs opacity-70">
+            <time dateTime={nowISO} suppressHydrationWarning>
+              {nowText || '—'}
+            </time>
+          </div>
           <Button onClick={handleExport} size="sm" className="shrink-0">
             <Download className="mr-2 h-4 w-4" />
             Export Card

@@ -113,10 +113,26 @@ export function generateIndexSeries(
   const stepMs = stepMinutes * 60 * 1000
   const start = now - daysBack * 24 * 60 * 60 * 1000
   const points: ScoreHistoryPoint[] = []
+
   for (let ts = start; ts <= now; ts += stepMs) {
-    points.push({ ts, value: computeIndexAt(events, weights, new Date(ts)) })
+    const at = new Date(ts)
+    const visible = events.filter(event => new Date(event.date).getTime() <= ts)
+    points.push({ ts, value: computeIndexAt(visible, weights, at) })
   }
+
   return points
+}
+
+export function mergeEvents(previous: EventItem[], incoming: EventItem[]) {
+  const map = new Map(previous.map(event => [event.id, event] as const))
+
+  for (const event of incoming) {
+    map.set(event.id, event)
+  }
+
+  return Array.from(map.values()).sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  )
 }
 
 export type EventStats = {

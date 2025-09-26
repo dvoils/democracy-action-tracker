@@ -83,10 +83,10 @@ export function ShareCard({ index, history, categoryScores, events }: ShareCardP
               <YAxis domain={[-100, 100]} hide axisLine={false} tickLine={false} />
               <Tooltip
                 formatter={(value: number | string) =>
-                  typeof value === 'number' ? value.toFixed(1) : value
+                  typeof value === 'number' ? value.toFixed(2) : value
                 }
                 labelFormatter={(ts: number | string) =>
-                  new Date(typeof ts === 'number' ? ts : Number(ts)).toLocaleTimeString()
+                  new Date(typeof ts === 'number' ? ts : Number(ts)).toLocaleString()
                 }
                 cursor={false}
               />

@@ -14,17 +14,21 @@ import {
   ScoreHistoryPoint,
   computeCategoryScores,
   createDefaultWeights,
-  seedEvents,
+  getSeedEvents,
   weightedIndex,
 } from '@/lib/democracy'
 
 export default function DemocracyTracker() {
-  const [events, setEvents] = useState<EventItem[]>(seedEvents)
+  const [events, setEvents] = useState<EventItem[]>([])
   const [weights, setWeights] = useState<CategoryWeights>(() => createDefaultWeights())
   const [history, setHistory] = useState<ScoreHistoryPoint[]>([])
 
   const categoryScores = useMemo<CategoryScores>(() => computeCategoryScores(events), [events])
   const index = useMemo(() => weightedIndex(categoryScores, weights), [categoryScores, weights])
+
+  useEffect(() => {
+    setEvents(getSeedEvents())
+  }, [])
 
   useEffect(() => {
     setHistory(previous => [...previous.slice(-199), { ts: Date.now(), value: index }])

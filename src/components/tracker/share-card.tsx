@@ -3,7 +3,7 @@
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts'
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts'
 import {
   CATEGORIES,
   CATEGORY_META,
@@ -24,8 +24,8 @@ type ShareCardProps = {
 export function ShareCard({ index, history, categoryScores, events }: ShareCardProps) {
   const stats = useMemo(() => computeEventStats(events), [events])
   const historyData = history.map(point => ({
-    t: new Date(point.ts).toLocaleTimeString(),
-    v: point.value,
+    ts: point.ts,
+    value: point.value,
   }))
 
   return (
@@ -72,18 +72,31 @@ export function ShareCard({ index, history, categoryScores, events }: ShareCardP
           />
         </div>
 
-        <div className="h-24">
+        <div className="h-16 md:h-20">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={historyData} margin={{ top: 8, bottom: 0, left: 0, right: 0 }}>
-              <XAxis dataKey="t" hide />
-              <YAxis domain={[-100, 100]} hide />
+            <AreaChart data={historyData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+              <XAxis dataKey="ts" hide axisLine={false} tickLine={false} />
+              <YAxis domain={[-100, 100]} hide axisLine={false} tickLine={false} />
               <Tooltip
                 formatter={(value: number | string) =>
                   typeof value === 'number' ? value.toFixed(1) : value
                 }
+                labelFormatter={(ts: number | string) =>
+                  new Date(typeof ts === 'number' ? ts : Number(ts)).toLocaleTimeString()
+                }
+                cursor={false}
               />
-              <Line type="monotone" dataKey="v" dot={false} strokeWidth={2} stroke="#111827" />
-            </LineChart>
+              <Area
+                type="monotone"
+                dataKey="value"
+                stroke="#22c55e"
+                strokeWidth={2}
+                fill="#22c55e"
+                fillOpacity={0.12}
+                dot={false}
+                isAnimationActive={false}
+              />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       </div>

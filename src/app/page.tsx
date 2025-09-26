@@ -105,7 +105,7 @@ export default function DemocracyTracker() {
   return (
     <div className="min-h-screen bg-white">
       <div className="sticky top-0 z-10 border-b bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
+        <div className="mx-auto flex max-w-4xl items-center justify-between gap-2 px-4 py-2">
           <div className="text-lg font-semibold">U.S. Democracy Tracker</div>
           {/* Hydration-safe time display */}
           <div className="flex items-center gap-2 text-xs opacity-70">
@@ -120,13 +120,13 @@ export default function DemocracyTracker() {
         </div>
       </div>
 
-      <section className="mx-auto max-w-5xl px-4 py-6">
-        <div ref={cardRef} className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
+      <section className="mx-auto max-w-4xl px-4 py-4">
+        <div ref={cardRef} className="rounded-2xl border bg-white p-4 shadow-sm md:p-5">
           <ShareCard index={index} history={history} categoryScores={categoryScores} events={events} />
         </div>
       </section>
 
-      <main className="mx-auto max-w-5xl space-y-8 px-4 pb-16">
+      <main className="mx-auto max-w-4xl space-y-6 px-4 pb-10">
         <DeepDive events={events} setEvents={setEvents} categoryScores={categoryScores} />
         <WeightsPanel weights={weights} setWeights={setWeights} />
       </main>

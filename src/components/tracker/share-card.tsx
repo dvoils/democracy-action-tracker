@@ -72,9 +72,13 @@ export function ShareCard({ index, history, categoryScores, events }: ShareCardP
           />
         </div>
 
-        <div className="h-16 md:h-20">
+        <div className="h-20">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={historyData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+            <AreaChart
+              data={historyData}
+              margin={{ top: 4, right: 8, bottom: 0, left: 0 }}
+              baseValue={0}
+            >
               <XAxis dataKey="ts" hide axisLine={false} tickLine={false} />
               <YAxis domain={[-100, 100]} hide axisLine={false} tickLine={false} />
               <Tooltip

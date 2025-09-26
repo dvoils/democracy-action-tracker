@@ -171,28 +171,26 @@ export const seedEvents: EventItem[] = [
   },
 ]
 
-export const exampleImportPayload = JSON.stringify(
-  [
-    {
-      id: 'ext-001',
-      date: new Date().toISOString(),
-      title: 'Independent commission adopts fair maps',
-      category: 'Elections',
-      direction: 1,
-      magnitude: 3,
-      confidence: 0.9,
-      url: 'https://example.com/source',
-    },
-    {
-      id: 'ext-002',
-      date: new Date().toISOString(),
-      title: 'Court stays injunction; restrictive law reinstated',
-      category: 'Rights & Liberties',
-      direction: -1,
-      magnitude: 2,
-      confidence: 0.85,
-    },
-  ],
-  null,
-  2,
-)
+const EXAMPLE_IMPORT_EVENTS: EventItem[] = [
+  {
+    id: 'ext-001',
+    date: '2024-03-01T00:00:00.000Z',
+    title: 'Independent commission adopts fair maps',
+    category: 'Elections',
+    direction: 1,
+    magnitude: 3,
+    confidence: 0.9,
+    url: 'https://example.com/source',
+  },
+  {
+    id: 'ext-002',
+    date: '2024-02-15T00:00:00.000Z',
+    title: 'Court stays injunction; restrictive law reinstated',
+    category: 'Rights & Liberties',
+    direction: -1,
+    magnitude: 2,
+    confidence: 0.85,
+  },
+]
+
+export const exampleImportPayload = JSON.stringify(EXAMPLE_IMPORT_EVENTS, null, 2)

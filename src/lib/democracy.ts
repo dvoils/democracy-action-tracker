@@ -140,36 +140,38 @@ export function computeEventStats(events: EventItem[]): EventStats {
   }
 }
 
-export const seedEvents: EventItem[] = [
-  {
-    id: 'seed-1',
-    date: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(),
-    title: 'Court curtails gerrymandered map',
-    category: 'Elections',
-    direction: 1,
-    magnitude: 2.5,
-    confidence: 0.9,
-    url: '#',
-  },
-  {
-    id: 'seed-2',
-    date: new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString(),
-    title: 'Legislature advances voter ID expansion',
-    category: 'Elections',
-    direction: -1,
-    magnitude: 2.0,
-    confidence: 0.8,
-  },
-  {
-    id: 'seed-3',
-    date: new Date().toISOString(),
-    title: 'Peaceful mass protest for press freedom',
-    category: 'Civil Society',
-    direction: 1,
-    magnitude: 1.2,
-    confidence: 0.7,
-  },
-]
+export function getSeedEvents(): EventItem[] {
+  return [
+    {
+      id: 'seed-1',
+      date: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(),
+      title: 'Court curtails gerrymandered map',
+      category: 'Elections',
+      direction: 1,
+      magnitude: 2.5,
+      confidence: 0.9,
+      url: '#',
+    },
+    {
+      id: 'seed-2',
+      date: new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString(),
+      title: 'Legislature advances voter ID expansion',
+      category: 'Elections',
+      direction: -1,
+      magnitude: 2.0,
+      confidence: 0.8,
+    },
+    {
+      id: 'seed-3',
+      date: new Date().toISOString(),
+      title: 'Peaceful mass protest for press freedom',
+      category: 'Civil Society',
+      direction: 1,
+      magnitude: 1.2,
+      confidence: 0.7,
+    },
+  ]
+}
 
 const EXAMPLE_IMPORT_EVENTS: EventItem[] = [
   {

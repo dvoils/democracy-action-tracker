@@ -98,6 +98,27 @@ export function weightedIndex(categoryScores: CategoryScores, weights: CategoryW
   return sum / totalWeight
 }
 
+export function computeIndexAt(events: EventItem[], weights: CategoryWeights, at: Date): number {
+  const scores = computeCategoryScores(events, at)
+  return weightedIndex(scores, weights)
+}
+
+export function generateIndexSeries(
+  events: EventItem[],
+  weights: CategoryWeights,
+  daysBack = 90,
+  stepMinutes = 60,
+): ScoreHistoryPoint[] {
+  const now = Date.now()
+  const stepMs = stepMinutes * 60 * 1000
+  const start = now - daysBack * 24 * 60 * 60 * 1000
+  const points: ScoreHistoryPoint[] = []
+  for (let ts = start; ts <= now; ts += stepMs) {
+    points.push({ ts, value: computeIndexAt(events, weights, new Date(ts)) })
+  }
+  return points
+}
+
 export type EventStats = {
   total: number
   positive: number

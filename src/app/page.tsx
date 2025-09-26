@@ -14,6 +14,7 @@ import {
   ScoreHistoryPoint,
   computeCategoryScores,
   createDefaultWeights,
+  generateIndexSeries,
   weightedIndex,
 } from '@/lib/democracy'
 
@@ -40,66 +41,64 @@ export default function DemocracyTracker() {
   const [weights, setWeights] = useState<CategoryWeights>(() => createDefaultWeights())
   const [history, setHistory] = useState<ScoreHistoryPoint[]>([])
 
-  // Seed demo events on the client after mount (safe to use Date here)
   useEffect(() => {
-    const seeds: EventItem[] = [
-      {
-        id: 'seed-1',
-        date: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(),
-        title: 'Court curtails gerrymandered map',
-        category: 'Elections',
-        direction: 1,
-        magnitude: 2.5,
-        confidence: 0.9,
-        url: '#',
-      },
-      {
-        id: 'seed-2',
-        date: new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString(),
-        title: 'Legislature advances voter ID expansion',
-        category: 'Elections',
-        direction: -1,
-        magnitude: 2.0,
-        confidence: 0.8,
-      },
-      {
-        id: 'seed-3',
-        date: new Date().toISOString(),
-        title: 'Peaceful mass protest for press freedom',
-        category: 'Civil Society',
-        direction: 1,
-        magnitude: 1.2,
-        confidence: 0.7,
-      },
-    ]
-    setEvents(seeds)
+    let cancelled = false
+
+    async function loadEvents() {
+      try {
+        const response = await fetch('data/events.json')
+        if (!response.ok) throw new Error(`Failed to load events: ${response.status}`)
+        const payload = await response.json()
+        if (cancelled) return
+        const incoming: unknown = payload?.events
+        if (!Array.isArray(incoming)) {
+          setEvents([])
+          return
+        }
+
+        const normalized = incoming
+          .filter((item): item is EventItem => {
+            if (typeof item !== 'object' || item === null) return false
+            const candidate = item as Record<string, unknown>
+            return (
+              typeof candidate.id === 'string' &&
+              typeof candidate.date === 'string' &&
+              typeof candidate.title === 'string' &&
+              typeof candidate.category === 'string' &&
+              (candidate.direction === 1 || candidate.direction === -1) &&
+              typeof candidate.magnitude === 'number' &&
+              typeof candidate.confidence === 'number'
+            )
+          })
+          .map(event => ({
+            ...event,
+            url: event.url && typeof event.url === 'string' ? event.url : undefined,
+            summary: event.summary && typeof event.summary === 'string' ? event.summary : undefined,
+          }))
+          .sort((a, b) => +new Date(b.date) - +new Date(a.date))
+
+        setEvents(normalized)
+      } catch (error) {
+        console.error('Failed to load static events dataset.', error)
+        if (!cancelled) {
+          setEvents([])
+        }
+      }
+    }
+
+    loadEvents()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const categoryScores = useMemo<CategoryScores>(() => computeCategoryScores(events), [events])
   const index = useMemo(() => weightedIndex(categoryScores, weights), [categoryScores, weights])
 
-  // Keep a small sparkline history (client-only)
   useEffect(() => {
-    const now = Date.now()
-    setHistory(prev => {
-      const base =
-        prev.length === 0
-          ? Array.from({ length: 60 }, (_, i) => ({
-              ts: now - (59 - i) * 2000,
-              value: index,
-            }))
-          : prev
-
-      return [...base.slice(-199), { ts: now, value: index }]
-    })
-  }, [index])
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setHistory((prev) => [...prev.slice(-199), { ts: Date.now(), value: index }])
-    }, 2000)
-    return () => clearInterval(timer)
-  }, [index])
+    const series = generateIndexSeries(events, weights, 90, 60)
+    setHistory(series)
+  }, [events, weights])
 
   const cardRef = useRef<HTMLDivElement | null>(null)
   const { text: nowText, iso: nowISO } = useNowText()

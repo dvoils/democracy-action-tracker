@@ -92,18 +92,18 @@ export function DeepDive({ events, setEvents, categoryScores }: DeepDiveProps) {
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6">
       <section>
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-xl font-semibold">Category Gauges</h2>
           <p className="text-sm text-muted-foreground">
             Scores reflect decayed, confidence-weighted impacts over the past year.
           </p>
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
           {CATEGORIES.map(category => (
             <Card key={category}>
-              <CardHeader className="py-3">
+              <CardHeader className="py-2">
                 <CardTitle className="text-base">{category}</CardTitle>
                 <p className="text-xs text-muted-foreground">
                   {CATEGORY_META[category].description}
@@ -117,7 +117,7 @@ export function DeepDive({ events, setEvents, categoryScores }: DeepDiveProps) {
         </div>
       </section>
 
-      <section className="space-y-4">
+      <section className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold">Event Ledger</h2>
@@ -152,7 +152,7 @@ export function DeepDive({ events, setEvents, categoryScores }: DeepDiveProps) {
         </div>
 
         <Card>
-          <CardContent className="grid gap-4 py-4 md:grid-cols-4">
+          <CardContent className="grid gap-3 py-3 grid-cols-2 md:grid-cols-4">
             <LedgerStat label="Visible events" value={filteredStats.total.toString()} />
             <LedgerStat label="Positive" value={filteredStats.positive.toString()} tone="positive" />
             <LedgerStat label="Negative" value={filteredStats.negative.toString()} tone="negative" />
@@ -166,7 +166,7 @@ export function DeepDive({ events, setEvents, categoryScores }: DeepDiveProps) {
 
         <div className="space-y-3">
           {filteredEvents.length === 0 && (
-            <div className="rounded-xl border border-dashed bg-muted/30 p-6 text-center text-sm text-muted-foreground">
+            <div className="rounded-xl border border-dashed bg-muted/30 p-4 text-center text-sm text-muted-foreground">
               No events match your filters yet.
             </div>
           )}
@@ -176,12 +176,12 @@ export function DeepDive({ events, setEvents, categoryScores }: DeepDiveProps) {
         </div>
       </section>
 
-      <section className="grid gap-6 md:grid-cols-2">
+      <section className="grid gap-4 md:grid-cols-2">
         <Card>
-          <CardHeader className="py-3">
+          <CardHeader className="py-2">
             <CardTitle>Add Event (Quick)</CardTitle>
           </CardHeader>
-          <CardContent className="grid items-end gap-3 md:grid-cols-6">
+          <CardContent className="grid items-end gap-2 md:grid-cols-6">
             <div className="md:col-span-2">
               <label className="text-sm">Title</label>
               <Input
@@ -250,7 +250,7 @@ export function DeepDive({ events, setEvents, categoryScores }: DeepDiveProps) {
         </Card>
 
         <Card>
-          <CardHeader className="py-3">
+          <CardHeader className="py-2">
             <CardTitle>Import Events (JSON)</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">

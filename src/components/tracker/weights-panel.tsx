@@ -20,14 +20,14 @@ export function WeightsPanel({ weights, setWeights }: WeightsPanelProps) {
 
   return (
     <Card>
-      <CardHeader className="flex flex-wrap items-center justify-between gap-3 py-3">
+      <CardHeader className="flex flex-wrap items-center justify-between gap-2 py-2">
         <CardTitle>Category Weights</CardTitle>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <span>Total weight:</span>
           <span className="font-semibold text-foreground">{totalWeight.toFixed(2)}</span>
         </div>
       </CardHeader>
-      <CardContent className="grid gap-4 md:grid-cols-2">
+      <CardContent className="grid gap-3 sm:grid-cols-2">
         {CATEGORIES.map(category => {
           const share = totalWeight > 0 ? (weights[category] / totalWeight) * 100 : 0
           return (
@@ -49,7 +49,7 @@ export function WeightsPanel({ weights, setWeights }: WeightsPanelProps) {
             </div>
           )
         })}
-        <Button variant="secondary" onClick={handleReset} className="md:col-span-2">
+        <Button variant="secondary" onClick={handleReset} className="sm:col-span-2">
           Reset weights
         </Button>
       </CardContent>

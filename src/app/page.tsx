@@ -14,9 +14,11 @@ import {
   ScoreHistoryPoint,
   computeCategoryScores,
   createDefaultWeights,
+  mergeEvents,
   generateIndexSeries,
   weightedIndex,
 } from '@/lib/democracy'
+import { fetchLiveBlend } from '@/lib/live-sources'
 
 /** Client-only live clock text (prevents SSR/client mismatch) */
 function useNowText() {
@@ -44,40 +46,38 @@ export default function DemocracyTracker() {
   useEffect(() => {
     let cancelled = false
 
-    async function loadEvents() {
+    function normalize(input: unknown): EventItem[] {
+      if (!Array.isArray(input)) return []
+
+      return input
+        .filter((item): item is EventItem => {
+          if (typeof item !== 'object' || item === null) return false
+          const candidate = item as Record<string, unknown>
+          return (
+            typeof candidate.id === 'string' &&
+            typeof candidate.date === 'string' &&
+            typeof candidate.title === 'string' &&
+            typeof candidate.category === 'string' &&
+            (candidate.direction === 1 || candidate.direction === -1) &&
+            typeof candidate.magnitude === 'number' &&
+            typeof candidate.confidence === 'number'
+          )
+        })
+        .map(event => ({
+          ...event,
+          url: event.url && typeof event.url === 'string' ? event.url : undefined,
+          summary: event.summary && typeof event.summary === 'string' ? event.summary : undefined,
+        }))
+    }
+
+    async function loadInitial() {
       try {
         const response = await fetch('data/events.json')
         if (!response.ok) throw new Error(`Failed to load events: ${response.status}`)
         const payload = await response.json()
         if (cancelled) return
-        const incoming: unknown = payload?.events
-        if (!Array.isArray(incoming)) {
-          setEvents([])
-          return
-        }
-
-        const normalized = incoming
-          .filter((item): item is EventItem => {
-            if (typeof item !== 'object' || item === null) return false
-            const candidate = item as Record<string, unknown>
-            return (
-              typeof candidate.id === 'string' &&
-              typeof candidate.date === 'string' &&
-              typeof candidate.title === 'string' &&
-              typeof candidate.category === 'string' &&
-              (candidate.direction === 1 || candidate.direction === -1) &&
-              typeof candidate.magnitude === 'number' &&
-              typeof candidate.confidence === 'number'
-            )
-          })
-          .map(event => ({
-            ...event,
-            url: event.url && typeof event.url === 'string' ? event.url : undefined,
-            summary: event.summary && typeof event.summary === 'string' ? event.summary : undefined,
-          }))
-          .sort((a, b) => +new Date(b.date) - +new Date(a.date))
-
-        setEvents(normalized)
+        const normalized = normalize(payload?.events)
+        setEvents(prev => mergeEvents(prev, normalized))
       } catch (error) {
         console.error('Failed to load static events dataset.', error)
         if (!cancelled) {
@@ -86,9 +86,49 @@ export default function DemocracyTracker() {
       }
     }
 
-    loadEvents()
+    loadInitial()
+
+    const refreshId = setInterval(async () => {
+      try {
+        const response = await fetch('data/events.json', { cache: 'no-store' })
+        if (!response.ok) return
+        const payload = await response.json()
+        if (cancelled) return
+        const normalized = normalize(payload?.events)
+        if (normalized.length) {
+          setEvents(prev => mergeEvents(prev, normalized))
+        }
+      } catch (error) {
+        console.error('Background refresh failed', error)
+      }
+    }, 5 * 60 * 1000)
+
     return () => {
       cancelled = true
+      clearInterval(refreshId)
+    }
+  }, [])
+
+  useEffect(() => {
+    let stopped = false
+
+    async function pollLive() {
+      try {
+        const liveEvents = await fetchLiveBlend()
+        if (!stopped && liveEvents.length) {
+          setEvents(prev => mergeEvents(prev, liveEvents))
+        }
+      } catch (error) {
+        console.error('Live polling failed', error)
+      }
+    }
+
+    pollLive()
+    const interval = setInterval(pollLive, 2 * 60 * 1000)
+
+    return () => {
+      stopped = true
+      clearInterval(interval)
     }
   }, [])
 

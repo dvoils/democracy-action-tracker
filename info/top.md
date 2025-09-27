@@ -125,3 +125,67 @@ git push
 
 Your live URL stays: **[https://dvoils.github.io/democracy-action-tracker/](https://dvoils.github.io/democracy-action-tracker/)**
 
+# Deploy to Production
+
+Congrats on the merge! To ship it to your live GitHub Pages site, you just need to rebuild the static export and push the updated `docs/` folder to `main`.
+
+## Quick manual deploy (current setup)
+
+From your repo root:
+
+```bash
+# 1) Get latest + install
+git switch main
+git pull
+npm ci
+
+# 2) Build & export (static HTML in ./out)
+npm run build:pages
+npx next export -o out
+
+# 3) Copy export to /docs (what Pages serves)
+rm -rf docs && mkdir -p docs && cp -r out/* docs/ && touch docs/.nojekyll
+
+# 4) Commit and push
+git add -A docs
+git commit -m "Deploy: $(date -u +'%Y-%m-%d %H:%M:%SZ')"
+git push origin main
+```
+
+Your site (already configured to serve **/docs** on `main`) will update at:
+**[https://dvoils.github.io/democracy-action-tracker/](https://dvoils.github.io/democracy-action-tracker/)**
+
+### Sanity checks
+
+* Open the URL above (hard refresh).
+* Confirm no hydration warnings in DevTools Console.
+* Test “Import Events (JSON)” placeholder + “Load Example”.
+* Click **Export Card** and verify the PNG downloads.
+
+---
+
+## (Optional) One-liner release script
+
+If you like fewer keystrokes, add this to `package.json`:
+
+```json
+{
+  "scripts": {
+    "export:pages": "next export -o out",
+    "release:pages": "npm run build:pages && npm run export:pages && npm run deploy:pages && git add -A docs && git commit -m \"Deploy: $(date -u +'%Y-%m-%d %H:%M:%SZ')\" || true && git push origin main"
+  }
+}
+```
+
+Then run:
+
+```bash
+npm run release:pages
+```
+
+---
+
+## (Optional) Auto-deploy on merge to main
+
+If you’d rather not commit `docs/` by hand, we can switch to a GitHub Actions Pages flow that builds the static export and publishes automatically (no `docs/` in git). If you want that, say the word and I’ll give you the exact workflow and minimal Next config tweaks for the **Pages (Actions)** pipeline.
+

@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "test:db": "node --env-file=.env ./dist/src/test-db.js",
     "migrate": "node --env-file=.env ./dist/src/index.js migrate",
     "ingest": "node --env-file=.env ./dist/src/index.js ingest",
     "dev:migrate": "tsx src/index.ts migrate",

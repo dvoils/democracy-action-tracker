@@ -1,14 +1,27 @@
 // backend/src/db.ts
-import { Pool } from 'pg'
+import { Pool, type PoolConfig } from 'pg'
 
 const { DATABASE_URL } = process.env
 if (!DATABASE_URL) throw new Error('DATABASE_URL is not set')
 
-export const pool = new Pool({
-  connectionString: DATABASE_URL,
-  max: 5,
-  ssl: { rejectUnauthorized: false }, // REQUIRED for Supabase TLS
-})
+function createPoolConfig(databaseUrl: string): PoolConfig {
+  const url = new URL(databaseUrl)
+
+  const sslMode = url.searchParams.get('sslmode')?.toLowerCase()
+  if (sslMode) {
+    url.searchParams.delete('sslmode')
+  }
+
+  const sslDisabled = sslMode === 'disable'
+
+  return {
+    connectionString: url.toString(),
+    max: 5,
+    ssl: sslDisabled ? false : { rejectUnauthorized: false },
+  }
+}
+
+export const pool = new Pool(createPoolConfig(DATABASE_URL))
 
 type UpsertRow = {
   id: string

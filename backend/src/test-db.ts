@@ -1,23 +1,12 @@
+// backend/src/test-db.ts
 import { performance } from 'node:perf_hooks'
-import { Pool } from 'pg'
-
-const { DATABASE_URL } = process.env
-
-if (!DATABASE_URL) {
-  throw new Error('DATABASE_URL is not set')
-}
-
-const pool = new Pool({
-  connectionString: DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-  max: 1,
-})
+import { pool } from './db.js'   // ✅ reuse the pool from db.ts
 
 async function main() {
   const start = performance.now()
-  const { rows } = await pool.query<{ now: string }>('select now() as now')
+  const { rows } = await pool.query('select now() as now')
   const serverTime = rows[0]?.now
-  console.log('Database connectivity OK')
+  console.log('✅ Database connectivity OK')
   if (serverTime) {
     console.log(`Server time: ${serverTime}`)
   }
@@ -31,7 +20,7 @@ main()
     console.log('Database connectivity check succeeded.')
   })
   .catch(async (error) => {
-    console.error('Database connectivity check failed:')
+    console.error('❌ Database connectivity check failed:')
     console.error(error)
     try {
       await pool.end()

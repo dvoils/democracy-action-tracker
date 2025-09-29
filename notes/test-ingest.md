@@ -1,4 +1,84 @@
 
+Absolutely—let’s do a clean local test end-to-end with the new SSL fix and the `test:db` helper.
+
+### 0) Make sure `.env` is set
+
+In `backend/.env` (replace with your real password, URL-encode special chars):
+
+```
+DATABASE_URL=postgresql://postgres.<projectref>:YOUR_PASSWORD@aws-1-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require
+```
+
+### 1) Fresh install & build
+
+```bash
+cd backend
+npm install          # first time only (creates package-lock.json)
+npm run build
+```
+
+### 2) Quick connectivity check
+
+```bash
+npm run test:db
+```
+
+**Expected:**
+`✅ DB connection OK. Current time: ...`
+
+If this fails, double-check the DATABASE_URL (password encoding; `?sslmode=require`), and that `backend/src/db.ts` has:
+
+```ts
+ssl: { rejectUnauthorized: false }
+```
+
+### 3) Apply the migration
+
+```bash
+npm run migrate
+```
+
+**Expected:**
+`✅ Migration applied`
+
+### 4) Run the ingester
+
+```bash
+npm run ingest
+```
+
+**Expected:**
+`✅ ingested <N> items (<N> upserted)`
+(N can be 0–50+ depending on what CourtListener returns at the moment.)
+
+### 5) Verify in Supabase
+
+Open Supabase Studio → **Table Editor** → `public.events`
+(or via SQL if you have `psql`):
+
+```bash
+PGPASSWORD='YOUR_PASSWORD' psql \
+  "host=aws-1-us-east-1.pooler.supabase.com port=6543 dbname=postgres user=postgres.<projectref> sslmode=require" \
+  -c "select count(*) total, min(date), max(date) from public.events;"
+```
+
+---
+
+## Troubleshooting quickies
+
+* **SELF_SIGNED_CERT_IN_CHAIN** → ensure `ssl: { rejectUnauthorized: false }` in `db.ts` and `?sslmode=require` in `DATABASE_URL`.
+* **“URI malformed”** → URL-encode your password (`#` → `%23`, `@` → `%40`, etc.).
+* **Ingest says 0 items** → the query might be returning few right now; try again later or loosen the filter in `ingest-courtlistener.ts`.
+* **Still stuck?** Run with a bit more logging:
+
+  ```bash
+  node --trace-warnings --env-file=.env ./dist/src/index.js ingest
+  ```
+
+If you hit any error message, paste it here and I’ll zero in on the fix.
+
+
+
 Ah, that error is expected — `npm ci` only works if a **`package-lock.json`** already exists. Since this backend skeleton is brand new, there isn’t one yet.
 
 Here’s how to fix it:

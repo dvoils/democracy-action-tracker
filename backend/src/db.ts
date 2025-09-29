@@ -1,11 +1,16 @@
+// backend/src/db.ts
 import { Pool } from 'pg'
 
 const { DATABASE_URL } = process.env
 if (!DATABASE_URL) throw new Error('DATABASE_URL is not set')
 
-export const pool = new Pool({ connectionString: DATABASE_URL, max: 5 })
+export const pool = new Pool({
+  connectionString: DATABASE_URL,
+  max: 5,
+  ssl: { rejectUnauthorized: false }, // REQUIRED for Supabase TLS
+})
 
-export async function upsertEvents(rows: {
+type UpsertRow = {
   id: string
   source: string
   date: string
@@ -16,11 +21,14 @@ export async function upsertEvents(rows: {
   magnitude: number
   confidence: number
   raw?: unknown | null
-}[]) {
+}
+
+/** Bulk upsert EventItem[] into public.events (idempotent) */
+export async function upsertEvents(rows: UpsertRow[]) {
   if (!rows.length) return 0
   const client = await pool.connect()
   try {
-    const values: unknown[] = []
+    const values: any[] = []
     const tuples = rows
       .map((row, index) => {
         const base = index * 10
@@ -53,7 +61,6 @@ export async function upsertEvents(rows: {
         confidence = excluded.confidence,
         raw = excluded.raw
     `
-
     const res = await client.query(text, values)
     return res.rowCount ?? 0
   } finally {

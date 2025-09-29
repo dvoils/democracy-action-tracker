@@ -1,13 +1,36 @@
-// backend/src/db.ts
 import { Pool } from 'pg'
 
 const { DATABASE_URL } = process.env
 if (!DATABASE_URL) throw new Error('DATABASE_URL is not set')
 
+/**
+ * Map sslmode query parameter to pg's ssl option.
+ * Supports: disable, require, no-verify
+ */
+function sslFromUrl(urlStr: string) {
+  try {
+    const url = new URL(urlStr)
+    const mode = url.searchParams.get('sslmode')?.toLowerCase()
+    switch (mode) {
+      case 'disable':
+        return {}
+      case 'no-verify':
+        return { ssl: { rejectUnauthorized: false } as const }
+      case 'require':
+      default:
+        return { ssl: true as const }
+    }
+  } catch {
+    return { ssl: true as const }
+  }
+}
+
 export const pool = new Pool({
   connectionString: DATABASE_URL,
   max: 5,
-  ssl: { rejectUnauthorized: false }, // REQUIRED for Supabase TLS
+  idleTimeoutMillis: 10_000,
+  connectionTimeoutMillis: 10_000,
+  ...sslFromUrl(DATABASE_URL),
 })
 
 type UpsertRow = {

@@ -1,3 +1,60 @@
+
+Ah, that error is expected — `npm ci` only works if a **`package-lock.json`** already exists. Since this backend skeleton is brand new, there isn’t one yet.
+
+Here’s how to fix it:
+
+---
+
+### 1. Do a normal install first
+
+In your `backend/` directory:
+
+```bash
+npm install
+```
+
+That will:
+
+* Install dependencies from `package.json`
+* Create a fresh `package-lock.json`
+
+---
+
+### 2. Then you can use `npm ci`
+
+Once `package-lock.json` exists, the “clean install” command will work:
+
+```bash
+npm ci
+```
+
+---
+
+### 3. Workflow for you right now
+
+Since this is your **first time bootstrapping**, just run:
+
+```bash
+cd backend
+npm install
+npm run build
+npm run migrate
+npm run ingest
+```
+
+---
+
+⚡ TL;DR:
+
+* Use `npm install` once to generate `package-lock.json`.
+* After that, `npm ci` will be your repeatable, fast, “from-scratch” install command (great for CI/CD and GitHub Actions).
+
+---
+
+Do you want me to include a **starter `package-lock.json`** in your Codex PR request so you can skip `npm install` and go straight to `npm ci` in CI/CD?
+
+
+
 Here’s a quick, no-mystery playbook to test the ingester locally and prove it’s doing the right thing end-to-end.
 
 # 0) One-time setup

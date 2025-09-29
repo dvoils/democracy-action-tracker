@@ -1,37 +1,36 @@
-// backend/src/db.ts
 import { Pool } from 'pg'
 
 const { DATABASE_URL } = process.env
 if (!DATABASE_URL) throw new Error('DATABASE_URL is not set')
 
-type SslMode = 'disable' | 'no-verify' | 'require'
-
-function getSslMode(connectionString: string): SslMode {
+/**
+ * Map sslmode query parameter to pg's ssl option.
+ * Supports: disable, require, no-verify
+ */
+function sslFromUrl(urlStr: string) {
   try {
-    const url = new URL(connectionString)
+    const url = new URL(urlStr)
     const mode = url.searchParams.get('sslmode')?.toLowerCase()
-    if (mode === 'disable') return 'disable'
-    if (mode === 'no-verify') return 'no-verify'
-    return 'require'
+    switch (mode) {
+      case 'disable':
+        return {}
+      case 'no-verify':
+        return { ssl: { rejectUnauthorized: false } as const }
+      case 'require':
+      default:
+        return { ssl: true as const }
+    }
   } catch {
-    return 'require'
+    return { ssl: true as const }
   }
 }
-
-function getSslConfig(mode: SslMode) {
-  if (mode === 'disable') return { ssl: false as const }
-  if (mode === 'no-verify') return { ssl: { rejectUnauthorized: false } as const }
-  return { ssl: true as const }
-}
-
-const sslMode = getSslMode(DATABASE_URL)
 
 export const pool = new Pool({
   connectionString: DATABASE_URL,
   max: 5,
   idleTimeoutMillis: 10_000,
   connectionTimeoutMillis: 10_000,
-  ...getSslConfig(sslMode),
+  ...sslFromUrl(DATABASE_URL),
 })
 
 type UpsertRow = {

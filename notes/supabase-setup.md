@@ -20,7 +20,8 @@ Here’s the minimal, step-by-step:
 3. In **Table Editor**, you don’t need to create tables manually—we’ll run the migration.
 
 ```bash
-postgresql://postgres.zofkjuptztjonovygwts:[YOUR-PASSWORD]@aws-1-us-east-1.pooler.supabase.com:6543/postgres
+postgresql://postgres.zofkjuptztjonovygwts:$SUPABASE_PASSWORD@aws-1-us-east-1.pooler.supabase.com:6543/postgres
+
 ```
 
 ---

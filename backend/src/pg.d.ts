@@ -2,7 +2,9 @@ declare module 'pg' {
   export interface PoolConfig {
     connectionString?: string
     max?: number
-    ssl?: false | { rejectUnauthorized?: boolean }
+    idleTimeoutMillis?: number
+    connectionTimeoutMillis?: number
+    ssl?: boolean | { rejectUnauthorized?: boolean }
   }
 
   export interface QueryResult<T = any> {

@@ -4,10 +4,34 @@ import { Pool } from 'pg'
 const { DATABASE_URL } = process.env
 if (!DATABASE_URL) throw new Error('DATABASE_URL is not set')
 
-// Rely on sslmode from the DATABASE_URL (e.g. ?sslmode=no-verify with Supabase pooler)
+type SslMode = 'disable' | 'no-verify' | 'require'
+
+function getSslMode(connectionString: string): SslMode {
+  try {
+    const url = new URL(connectionString)
+    const mode = url.searchParams.get('sslmode')?.toLowerCase()
+    if (mode === 'disable') return 'disable'
+    if (mode === 'no-verify') return 'no-verify'
+    return 'require'
+  } catch {
+    return 'require'
+  }
+}
+
+function getSslConfig(mode: SslMode) {
+  if (mode === 'disable') return { ssl: false as const }
+  if (mode === 'no-verify') return { ssl: { rejectUnauthorized: false } as const }
+  return { ssl: true as const }
+}
+
+const sslMode = getSslMode(DATABASE_URL)
+
 export const pool = new Pool({
   connectionString: DATABASE_URL,
   max: 5,
+  idleTimeoutMillis: 10_000,
+  connectionTimeoutMillis: 10_000,
+  ...getSslConfig(sslMode),
 })
 
 type UpsertRow = {

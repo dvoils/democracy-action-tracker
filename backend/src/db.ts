@@ -1,41 +1,9 @@
-import { readFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
 import { Pool } from 'pg'
 
 const { DATABASE_URL } = process.env
 if (!DATABASE_URL) throw new Error('DATABASE_URL is not set')
 
 export const pool = new Pool({ connectionString: DATABASE_URL, max: 5 })
-
-async function loadMigration(): Promise<string> {
-  const candidates = [
-    resolve(process.cwd(), 'migrations/001_init.sql'),
-    resolve(process.cwd(), 'backend/migrations/001_init.sql')
-  ]
-  for (const file of candidates) {
-    try {
-      return await readFile(file, 'utf8')
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
-    }
-  }
-  throw new Error('Could not find migrations/001_init.sql')
-}
-
-export async function migrate() {
-  const sql = await loadMigration()
-  const client = await pool.connect()
-  try {
-    await client.query('begin')
-    await client.query(sql)
-    await client.query('commit')
-  } catch (e) {
-    await client.query('rollback')
-    throw e
-  } finally {
-    client.release()
-  }
-}
 
 export async function upsertEvents(rows: {
   id: string

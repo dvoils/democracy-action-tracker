@@ -13,9 +13,9 @@ function toISO(d?: string) {
 
 /** Minimal heuristic mapping to EventItem */
 export async function fetchCourtListener(): Promise<EventItem[]> {
-  const r = await fetch(CL_URL, { cache: 'no-store' })
+  const r = await fetch(CL_URL)
   if (!r.ok) return []
-  const json = await r.json()
+  const json = (await r.json()) as { results?: any[] }
   const results: any[] = json?.results ?? []
 
   return results.map((o): EventItem => {

@@ -1,4 +1,5 @@
-import { migrate, pool, upsertEvents } from './db.js'
+import { pool, upsertEvents } from './db.js'
+import { migrate } from './migrate.js'
 import { fetchCourtListener } from './ingest-courtlistener.js'
 
 async function run(cmd?: string) {
